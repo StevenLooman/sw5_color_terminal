@@ -1,0 +1,8 @@
+*.magikc
+*.msgc
+
+*.swp
+*~
+\#*\#
+
+jacoco.exec

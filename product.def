@@ -1,0 +1,9 @@
+sw5_color_terminal layered_product
+
+title
+	SW5 Color Terminal
+end
+
+description
+	Color support in terminal for SW5
+end

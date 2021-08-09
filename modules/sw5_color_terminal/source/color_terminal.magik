@@ -1,0 +1,563 @@
+#% text_encoding = iso8859_1
+_package sw
+
+_pragma(classify_level=advanced, topic={color_terminal})
+##
+## Color terminal.
+##
+## Example usage:
+## ```
+## color_terminal.install()
+## write(color_terminal.ansi_fg_red, "This is text in red", color_terminal.ansi_reset)
+## ```
+##
+## If needed, call `color_terminal.reset()` to reset state.
+##
+def_slotted_exemplar(
+	:color_terminal,
+	{},
+	{@sw:terminal})
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.supports_color?
+	## Does this terminal support color?
+	## @return {sw:true|sw:false} True if this terminal supports color, false otherwise.
+	_return !terminal!.is_class_of?(terminal) _orif  # remote_terminal does not, probably
+		!terminal! _is _self
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.enabled?
+	## Color terminal enabled?
+	## @return {sw:true|sw:false} True if enabled, false otherwise.
+	_return !terminal! _is _self
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.install()
+	## Install color terminal.
+	## @return {_self} The set terminal.
+	_if _not _self.supports_color?
+	_then
+		condition.raise(:error, :string, "Terminal does not support coloring")
+	_endif
+
+	_if system.os_name _is :windows
+	_then
+		_self.load_ansicon()
+	_endif
+	_return _self.set_terminal()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_private _method color_terminal.windows_is_64_bit?()
+	## Test if process is 32 bit or 64 bit.
+	## @return {sw:true|sw:false} True if this is a 64bit process, false otherwise.
+	_local input_stream << system.input_from_command("powershell [Environment]::Is64BitProcess")
+	_protect
+		_local line << input_stream.get_line()
+		_return line.default("").lowercase = "true"
+	_protection
+		input_stream.close()
+	_endprotect
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_private _method color_terminal.load_ansicon()
+	## Enable color support in Windows through ansicon.
+	_local module << sw_module_manager.module(:sw5_color_terminal)
+	_local arch <<
+		_if _self.windows_is_64_bit?()
+		_then
+			>> "x64"
+		_else
+			>> "x86"
+		_endif
+	_local type << system.pathname_down("ansi189-bin", arch)
+	_local ansicon_path << module.get_resource_file("ansicon.exe", type)
+	_local command << write_string(ansicon_path, " -p")
+	system.do_command(command)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_private _method color_terminal.set_terminal()
+	## Set self as `!terminal!`.
+	## @return {_self} Set terminal.
+	_global !terminal!
+	_return !terminal! << _self
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.reset()
+	## Reset state.
+	!terminal!.write(_self.safe_reset)
+	!terminal!.flush()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_reset,
+	write_string(character.escape, "[m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bold,
+	write_string(character.escape, "[1m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_underline,
+	write_string(character.escape, "[4m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_blink,
+	write_string(character.escape, "[5m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bold_off,
+	write_string(character.escape, "[22m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_underline_off,
+	write_string(character.escape, "[24m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_blink_off,
+	write_string(character.escape, "[25m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_black,
+	write_string(character.escape, "[30m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_red,
+	write_string(character.escape, "[31m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_green,
+	write_string(character.escape, "[32m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_yellow,
+	write_string(character.escape, "[33m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_blue,
+	write_string(character.escape, "[34m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_magenta,
+	write_string(character.escape, "[35m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_cyan,
+	write_string(character.escape, "[36m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_fg_white,
+	write_string(character.escape, "[37m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_black,
+	write_string(character.escape, "[40m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_red,
+	write_string(character.escape, "[41m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_green,
+	write_string(character.escape, "[42m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_yellow,
+	write_string(character.escape, "[43m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_blue,
+	write_string(character.escape, "[44m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_magenta,
+	write_string(character.escape, "[45m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_cyan,
+	write_string(character.escape, "[46m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+## @return {sw:char16_vector}
+color_terminal.define_shared_constant(
+	:ansi_bg_white,
+	write_string(character.escape, "[47m"),
+	:public)
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_reset
+	## Get safe ansi_reset if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_reset
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bold
+	## Get safe ansi_bold if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bold
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_underline
+	## Get safe ansi_bold if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_underline
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_blink
+	## Get safe ansi_blink if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_blink
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bold_off
+	## Get safe ansi_bold_off if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bold_off
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_underline_off
+	## Get safe ansi_underline_off if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_underline_off
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_blink_off
+	## Get safe ansi_blink_off if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_blink_off
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_black
+	## Get safe ansi_fg_black if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_black
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_red
+	## Get safe ansi_fg_red if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_red
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_green
+	## Get safe ansi_fg_green if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_green
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_yellow
+	## Get safe ansi_fg_yellow if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_yellow
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_blue
+	## Get safe ansi_fg_blue if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_blue
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_magenta
+	## Get safe ansi_fg_magenta if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_magenta
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_cyan
+	## Get safe ansi_fg_cyan if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_cyan
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_fg_white
+	## Get safe ansi_fg_white if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_fg_white
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_black
+	## Get safe ansi_bg_black if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_black
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_red
+	## Get safe ansi_bg_red if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_red
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_green
+	## Get safe ansi_bg_green if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_green
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_yellow
+	## Get safe ansi_bg_yellow if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_yellow
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_blue
+	## Get safe ansi_bg_blue if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_blue
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_magenta
+	## Get safe ansi_bg_magenta if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_magenta
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_cyan
+	## Get safe ansi_bg_cyan if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_cyan
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={color_terminal})
+_method color_terminal.safe_bg_white
+	## Get safe ansi_bg_white if !terminal! is color_terminal, or "" if not.
+	## @return {sw:char16_vector}
+	_if _not _self.enabled?
+	_then
+		_return ""
+	_endif
+	_return _self.ansi_bg_white
+_endmethod
+$

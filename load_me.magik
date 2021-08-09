@@ -1,0 +1,16 @@
+#% text_encoding = iso8859_1
+
+_package sw
+
+_block
+	_local path << system.pathname_up(!source_file!)
+	smallworld_product.add_product(path)
+	sw_module_manager.load_module(:sw5_color_terminal)
+_endblock
+$
+
+_block
+	color_terminal.install()
+	write(color_terminal.safe_fg_green, "Color terminal is installed", color_terminal.safe_reset)
+_endblock
+$
