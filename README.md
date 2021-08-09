@@ -44,16 +44,16 @@ On non-Windows, your terminal will probably support ANSI out of the box. Nothing
 
 ## FAQ
 
-Q: Does this work for files?
+Q: Does this work for files?\
 A: Probably not, YMMV.
 
-Q: Does this work on Smallworld 4?
+Q: Does this work on Smallworld 4?\
 A: Maybe, YMMV.
 
-Q: Does this work in combination with emacs/magik-mode?
+Q: Does this work in combination with emacs/magik-mode?\
 A: Probably not, YMMV.
 
 
 ## License
 
-Released under the GPLv3 license, see `LICENSE`.
+Released under the GPLv3 license, see [LICENSE](LICENSE).
